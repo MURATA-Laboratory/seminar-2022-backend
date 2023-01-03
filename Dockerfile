@@ -1,13 +1,28 @@
-FROM python:3.8-alpine
+FROM python:3.8-slim as builder
+
+RUN mkdir /resource
 
 WORKDIR /resource
 
-COPY requirements.txt .
+RUN pip install poetry
 
-RUN apk add --no-cache build-base \
- && pip install --no-cache-dir --trusted-host pypi.python.org -r requirements.txt \
- && apk del build-base
+COPY pyproject.toml poetry.lock ./
 
-COPY healthcheck.py .
+RUN poetry export -f requirements.txt > requirements.txt
 
-CMD ["uvicorn","healthcheck:resource","--reload","--host","0.0.0.0","--port","8000"]
+
+FROM python:3.8-slim
+
+ENV PYTHONUNBUFFERED=1
+
+WORKDIR /resource
+
+COPY --from=builder /resource/requirements.txt .
+
+RUN pip install -r requirements.txt
+
+COPY ./healthcheck.py /resource/healthcheck.py
+
+EXPOSE 8000
+
+CMD [ "uvicorn", "healthcheck:resource", "--host", "0.0.0.0" ]
