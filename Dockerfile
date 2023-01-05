@@ -1,28 +1,20 @@
-FROM python:3.8-slim as builder
-
-RUN mkdir /resource
-
-WORKDIR /resource
-
-RUN pip install poetry
-
-COPY pyproject.toml poetry.lock ./
-
-RUN poetry export -f requirements.txt > requirements.txt
-
-
-FROM python:3.8-slim
+FROM python:3.10.5
 
 ENV PYTHONUNBUFFERED=1
-
-WORKDIR /resource
-
-COPY --from=builder /resource/requirements.txt .
-
-RUN pip install -r requirements.txt
-
-COPY ./healthcheck.py /resource/healthcheck.py
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONPATH=/src
 
 EXPOSE 8000
 
-CMD [ "uvicorn", "healthcheck:resource", "--host", "0.0.0.0" ]
+WORKDIR /src
+
+RUN apt update \
+    && apt install -y --no-install-recommends less
+
+RUN pip install poetry \
+    && poetry config virtualenvs.create false
+
+COPY ./healthcheck.py ./pyproject.toml ./poetry.lock ./
+RUN poetry install --no-dev --no-root
+
+CMD ["poetry","run","uvicorn","healthcheck:app","--reload","--host","0.0.0.0","--port","8000"]
