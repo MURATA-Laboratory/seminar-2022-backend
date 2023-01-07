@@ -6,7 +6,7 @@ FastAPI server for subtitle generation.
 Before you begin, ensure you have met the following requirements:
 
 - You have installed `seminar-2022-backend/pyproject.toml`
-- You have a `<Windows(wsl2 ubuntu)/Linux/Mac>`machine.State which OS is supported/which is not.
+- You have a `<Windows(wsl2 ubuntu)/Linux/Mac>`
 
 ## Installing poetry
 To install poetry, follow these steps:
