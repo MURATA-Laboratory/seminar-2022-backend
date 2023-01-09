@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "seminar-2022-backend"
+version = "0.1.0"
+description = ""
+authors = ["Taito Nakada <31927@toyota.kosen-ac.jp>"]
+readme = "README.md"
+packages = [{include = "seminar_2022_backend"}]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+fastapi = "^0.88.0"
+uvicorn = {extras = ["standard"], version = "^0.20.0"}
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
