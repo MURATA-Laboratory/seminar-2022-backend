@@ -14,7 +14,7 @@ RUN apt update \
 RUN pip install poetry \
     && poetry config virtualenvs.create false
 
-COPY ./healthcheck.py ./pyproject.toml ./poetry.lock ./
+COPY ./app/healthcheck.py ./pyproject.toml ./poetry.lock ./
 RUN poetry install --no-dev --no-root
 
 CMD ["poetry","run","uvicorn","healthcheck:app","--reload","--host","0.0.0.0","--port","8000"]
