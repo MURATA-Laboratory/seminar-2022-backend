@@ -2,10 +2,10 @@ version: '3'
 
 services:
   app:
-  container_name: poetryc
-    build: ./fastapi
+    container_name: poetryc-compose
+    build: .
     volumes:
-      - ./fastapi:src
+      - ./src:/var/www/html
     ports:
       - "8000:8000"
     command: ["uvicorn", "healthcheck:app", "--reload", "--host", "0.0.0.0","--port","8000"]
