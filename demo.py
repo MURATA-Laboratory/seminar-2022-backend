@@ -75,6 +75,12 @@ model = MyModel(
     pretrained_model_name=config.pretrained_model_name,
     config=config,
 )
+
+
+def get_model():
+    return model
+
+
 model.load_state_dict(
     torch.load(MODEL_PATH, map_location=torch.device("cpu"))["state_dict"]
 )
