@@ -4,6 +4,8 @@ from typing import Dict
 from fastapi import Depends, FastAPI
 from pydantic import BaseModel
 
+import MeCab as mc
+
 import time
 
 import numpy as np
@@ -23,7 +25,7 @@ class IndentionRequest(BaseModel):
 
     
 class IndentionResponse(BaseModel):
-    translation: str
+    transla: str
 
   
 config = dict(
@@ -107,46 +109,13 @@ model.freeze()
 
 threshold = 0.5
 
-while True:
-    text = input("Text (exit): ")
-    if text == "exit":
-        break
-    elif "[ANS]" not in text:
-        print("Please input [ANS] in your text.")
-        continue
 
-    t0 = time.time()
-    encoding = tokenizer.encode_plus(
-        text,
-        add_special_tokens=True,
-        max_length=config.data_module.max_length,
-        padding="max_length",
-        truncation=True,
-        return_attention_mask=True,
-        return_tensors="pt",
-    )
-    predictions = model(
-        input_ids=encoding["input_ids"],
-        attention_mask=encoding["attention_mask"],
-    )[1]
-    print(f"[Time: {time.time() - t0:.2f} sec]")
-    print(
-        f"LF: {predictions[0].item() * 100:.3f}%, Comma: {predictions[1][0][1].item() * 100:.3f}%, Period: {predictions[1][0][2].item() * 100:.3f}%"
-    )
-
-    print(text.split("[ANS]")[0], end="")
-    if np.argmax(predictions[1]) == 1:
-        print("、", end="")
-    elif np.argmax(predictions[1]) == 2:
-        print("。", end="")
-    if predictions[0] > threshold:
-        print("")
-    print(text.split("[ANS]")[1], end="\n\n")
-
-  
 @app.post("/predict", response_model=IndentionResponse)
 def predict(request: IndentionRequest, model: MyModel = Depends(get_model)):
-    translation = model.forward(request.text)
+    mecab = mc.Tagger('-Owakati')
+    Notoken = mecab.parse(request.text)
+    Withtoken = Notoken.replace(' ', '[ANS]')
+    translation = model.forward(Withtoken)
     return IndentionResponse(
         translation=translation
     )
