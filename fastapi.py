@@ -4,7 +4,7 @@ from typing import Dict
 from fastapi import Depends, FastAPI
 from pydantic import BaseModel
 
-import MeCab as mc
+import CaboCha as cb
 
 import time
 
@@ -97,8 +97,6 @@ model = MyModel(
 )
 
 
-def get_model():
-    return model
 
 
 model.load_state_dict(
@@ -111,11 +109,44 @@ threshold = 0.5
 
 
 @app.post("/predict", response_model=IndentionResponse)
-def predict(request: IndentionRequest, model: MyModel = Depends(get_model)):
-    mecab = mc.Tagger('-Owakati')
-    Notoken = mecab.parse(request.text)
-    Withtoken = Notoken.replace(' ', '[ANS]')
-    translation = model.forward(Withtoken)
+def predict(request: IndentionRequest):
+    # requestをcabochaを使って文節に区切る
+    Intoken = ''
+    translation = '' 
+    cabocha = cb.Parser()
+    tree = cabocha.parse(request)
+    for i in range(tree.chunk_size()):
+        chunk = tree.chunk(i)
+        # 文節に区切る
+        for ix in range(chunk.token_pos, chunk.token_pos + chunk.token_size):
+            Intoken = Intoken + tree.token(ix).surface 
+        # tokenを挿入
+        if i < tree.chunk_size()-1:
+            Intoken = Intoken + "[ANS]"
+
+    # モデルとのやり取り
+    encoding = tokenizer.encode_plus(
+        Intoken,
+        add_special_tokens=True,
+        max_length=config.data_module.max_length,
+        padding="max_length",
+        truncation=True,
+        return_attention_mask=True,
+        return_tensors="pt",
+    )
+    predictions = model(
+        input_ids=encoding["input_ids"],
+        attention_mask=encoding["attention_mask"],
+    )[1]
+    for i in range(tree.chunk_size()):
+        # わからん translation = translation + Intoken.split("[ANS]")[i]
+        if np.argmax(predictions[i+1]) == 1:
+            translation = translation + "、"
+        elif np.argmax(predictions[i+1]) == 2:
+            translation = translation + "。"
+        if predictions[0] > threshold:
+            translation = translation
+        # わからん translation = translation + Intoken.split("[ANS]")[i+1]
     return IndentionResponse(
         translation=translation
     )
