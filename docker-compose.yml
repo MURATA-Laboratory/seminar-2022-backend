@@ -1,13 +1,11 @@
-version: '3'
+version: "3"
 
 services:
   app:
     container_name: poetryc-compose
-    build: .
     volumes:
-      - .:/src
-    
+      - ./src :/app
+    build: .
     ports:
-      - 8000:8000
-      - 8001:8001
-   
+      - "8000:8000"
+    command: uvicorn healthcheck:app --reload --host 0.0.0.0 --port 8000
