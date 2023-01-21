@@ -1,5 +1,3 @@
-import time
-
 import numpy as np
 import pytorch_lightning as pl
 import torch
@@ -19,7 +17,6 @@ config = dict(
         hidden_comma_period_layer=2048,
     ),
 )
-
 config = Box(config)
 
 tokenizer = BertTokenizer.from_pretrained(config.pretrained_model_name)
@@ -67,7 +64,22 @@ class MyModel(pl.LightningModule):
         comma_period_predictions = torch.softmax(
             self.comma_period_layer(comma_period_outputs), dim=1  # row
         )
-        return 0, [lf_predictions, comma_period_predictions]
+        return lf_predictions, comma_period_predictions
+
+    def predict(self, text):
+        encoding = tokenizer.encode_plus(
+            text,
+            add_special_tokens=True,
+            max_length=config.data_module.max_length,
+            padding="max_length",
+            truncation=True,
+            return_attention_mask=True,
+            return_tensors="pt",
+        )
+        return self(
+            input_ids=encoding["input_ids"],
+            attention_mask=encoding["attention_mask"],
+        )
 
 
 model = MyModel(
@@ -75,52 +87,12 @@ model = MyModel(
     pretrained_model_name=config.pretrained_model_name,
     config=config,
 )
-
-
-def get_model():
-    return model
-
-
 model.load_state_dict(
     torch.load(MODEL_PATH, map_location=torch.device("cpu"))["state_dict"]
 )
 model.eval()
 model.freeze()
 
-threshold = 0.5
 
-while True:
-    text = input("Text (exit): ")
-    if text == "exit":
-        break
-    elif "[ANS]" not in text:
-        print("Please input [ANS] in your text.")
-        continue
-
-    t0 = time.time()
-    encoding = tokenizer.encode_plus(
-        text,
-        add_special_tokens=True,
-        max_length=config.data_module.max_length,
-        padding="max_length",
-        truncation=True,
-        return_attention_mask=True,
-        return_tensors="pt",
-    )
-    predictions = model(
-        input_ids=encoding["input_ids"],
-        attention_mask=encoding["attention_mask"],
-    )[1]
-    print(f"[Time: {time.time() - t0:.2f} sec]")
-    print(
-        f"LF: {predictions[0].item() * 100:.3f}%, Comma: {predictions[1][0][1].item() * 100:.3f}%, Period: {predictions[1][0][2].item() * 100:.3f}%"
-    )
-
-    print(text.split("[ANS]")[0], end="")
-    if np.argmax(predictions[1]) == 1:
-        print("、", end="")
-    elif np.argmax(predictions[1]) == 2:
-        print("。", end="")
-    if predictions[0] > threshold:
-        print("")
-    print(text.split("[ANS]")[1], end="\n\n")
+def get_model():
+    return model
