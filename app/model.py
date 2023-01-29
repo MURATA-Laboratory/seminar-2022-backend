@@ -4,7 +4,7 @@ import torch
 from box import Box
 from transformers import BertModel, BertTokenizer
 
-MODEL_PATH = "./epoch=3.ckpt"
+LF_PERIOD_COMMA_MODEL_PATH = "./lf_comma_period_model.ckpt"
 
 config = dict(
     pretrained_model_name="cl-tohoku/bert-base-japanese-whole-word-masking",
@@ -23,7 +23,7 @@ tokenizer = BertTokenizer.from_pretrained(config.pretrained_model_name)
 tokenizer.add_tokens(["[ANS]"])
 
 
-class MyModel(pl.LightningModule):
+class LfPeriodCommaModel(pl.LightningModule):
     THRESHOLD = 0.5
 
     def __init__(
@@ -82,13 +82,15 @@ class MyModel(pl.LightningModule):
         )
 
 
-model = MyModel(
+model = LfPeriodCommaModel(
     tokenizer,
     pretrained_model_name=config.pretrained_model_name,
     config=config,
 )
 model.load_state_dict(
-    torch.load(MODEL_PATH, map_location=torch.device("cpu"))["state_dict"]
+    torch.load(LF_PERIOD_COMMA_MODEL_PATH, map_location=torch.device("cpu"))[
+        "state_dict"
+    ]
 )
 model.eval()
 model.freeze()
