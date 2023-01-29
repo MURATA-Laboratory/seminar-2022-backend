@@ -7,7 +7,7 @@ from fastapi import Depends, FastAPI
 from pydantic import BaseModel
 
 sys.path.append("../")
-from model import MyModel, get_model
+from model import LfPeriodCommaModel, get_model
 
 app = FastAPI()
 
@@ -29,7 +29,7 @@ class InsertionResponse(BaseModel):
 
 
 @app.post("/predict", response_model=InsertionResponse)
-def predict(request: InsertionRequest, model: MyModel = Depends(get_model)):
+def predict(request: InsertionRequest, model: LfPeriodCommaModel = Depends(get_model)):
     cp = cb.Parser()
     tree = cp.parse(request.text)
 
@@ -58,7 +58,7 @@ def predict(request: InsertionRequest, model: MyModel = Depends(get_model)):
             response += "、"
         elif np.argmax(comma_period) == 2:
             response += "。"
-        if lf > MyModel.THRESHOLD:
+        if lf > LfPeriodCommaModel.THRESHOLD:
             response += "\n"
 
     last_chunk_text = "".join(
