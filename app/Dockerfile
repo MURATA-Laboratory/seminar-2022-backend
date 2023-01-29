@@ -8,7 +8,7 @@ EXPOSE 8000
 WORKDIR /app
 
 RUN pip install poetry \
-    && poetry config virtualenvs.in-project false
+    && poetry config virtualenvs.create false
 
 # Mecab
 RUN apt update \
@@ -57,4 +57,4 @@ RUN FILE_ID="10-Gt9GqGgJCXQBitYxB6zez2Y4Mg9ZzK" \
 COPY . .
 RUN poetry install --no-root
 
-CMD ["poetry", "run", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
