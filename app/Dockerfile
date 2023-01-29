@@ -8,7 +8,7 @@ EXPOSE 8000
 WORKDIR /app
 
 RUN pip install poetry \
-    && poetry config virtualenvs.in-project false
+    && poetry config virtualenvs.create false
 
 # Mecab
 RUN apt update \
