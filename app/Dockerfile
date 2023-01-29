@@ -47,7 +47,7 @@ RUN cd /tmp \
   && rm -rf /tmp/cabocha-0.69 \
   && ldconfig
 
-# Download lf-comma-period model weights
+# Download lf-comma-period model weights (20230114_143221)
 RUN FILE_ID="10-Gt9GqGgJCXQBitYxB6zez2Y4Mg9ZzK" \
   && curl -c /tmp/cookie -s "https://drive.google.com/uc?export=download&id=${FILE_ID}" > /dev/null \
   && CODE="$(awk '/_warning_/ {print $NF}' /tmp/cookie)"  \

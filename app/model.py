@@ -14,7 +14,7 @@ config = dict(
     ),
     model=dict(
         hidden_lf_layer=256,
-        hidden_comma_period_layer=2048,
+        hidden_comma_period_layer=128,
     ),
 )
 config = Box(config)
