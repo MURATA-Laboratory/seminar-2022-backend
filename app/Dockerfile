@@ -9,7 +9,7 @@ EXPOSE 8000
 WORKDIR /app
 
 RUN pip install poetry \
-    && poetry config virtualenvs.in-project true
+    && poetry config virtualenvs.in-project false
 
 # Mecab
 RUN apt update \
@@ -47,6 +47,13 @@ RUN cd /tmp \
   && rm /tmp/cabocha-0.69.tar.bz2 \
   && rm -rf /tmp/cabocha-0.69 \
   && ldconfig
+
+# Download lf-comma-period model weights
+RUN FILE_ID="10-Gt9GqGgJCXQBitYxB6zez2Y4Mg9ZzK" \
+  && curl -c /tmp/cookie -s "https://drive.google.com/uc?export=download&id=${FILE_ID}" > /dev/null \
+  && CODE="$(awk '/_warning_/ {print $NF}' /tmp/cookie)"  \
+  && curl -b /tmp/cookie -L "https://drive.google.com/uc?export=download&confirm=${CODE}&id=${FILE_ID}" -o lf_comma_period_model.ckpt \
+  && rm /tmp/cookie
 
 COPY . .
 RUN poetry install --no-root
