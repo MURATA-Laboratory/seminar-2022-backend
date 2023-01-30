@@ -20,20 +20,40 @@ async def get_health():
 ##### predict #####
 class InsertionRequest(BaseModel):
     text: str
-    # TODO: last_chunkを受け取る処理を追加
+    pre_last_chunk: str | None = None
 
 
 class InsertionResponse(BaseModel):
     text: str
     last_chunk: str
+    elapsed_time: float
 
 
 @app.post("/predict", response_model=InsertionResponse)
 def predict(request: InsertionRequest, model: LfPeriodCommaModel = Depends(get_model)):
+    start = time.time()
+
     cp = cb.Parser()
     tree = cp.parse(request.text)
 
     response = ""
+    if request.pre_last_chunk is not None:
+        chunk = tree.chunk(0)
+        chunk_text = "".join(
+            [
+                tree.token(j).surface
+                for j in range(chunk.token_pos, chunk.token_pos + chunk.token_size)
+            ]
+        )
+        lf, comma_period = model.predict(request.pre_last_chunk + "[ANS]" + chunk_text)
+
+        if np.argmax(comma_period) == 1:
+            response += "、"
+        elif np.argmax(comma_period) == 2:
+            response += "。"
+        if lf > LfPeriodCommaModel.THRESHOLD:
+            response += "\n"
+
     for i in range(tree.chunk_size() - 1):
         chunk = tree.chunk(i)
         chunk_text = "".join(
@@ -72,4 +92,6 @@ def predict(request: InsertionRequest, model: LfPeriodCommaModel = Depends(get_m
         ]
     )
     response += last_chunk_text
-    return InsertionResponse(text=response, last_chunk=last_chunk_text)
+    return InsertionResponse(
+        text=response, last_chunk=last_chunk_text, elapsed_time=time.time() - start
+    )
