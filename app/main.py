@@ -1,15 +1,26 @@
 import sys
 import time
+import os
 
 import CaboCha as cb
 import numpy as np
 from fastapi import Depends, FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+
 
 sys.path.append("../")
 from model import LfPeriodCommaModel, get_model
 
 app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    # set string like "http://localhost:8000,https://example.com"
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 ##### health check #####
 @app.get("/health")
