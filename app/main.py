@@ -16,7 +16,9 @@ app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
     # set string like "http://localhost:8000,https://example.com"
-    allow_origins=["*"],
+    allow_origins=os.environ.get(
+        "ALLOW_ORIGINS", "http://localhost:8000,http://localhost:3000"
+    ).split(","),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -40,7 +42,7 @@ class InsertionResponse(BaseModel):
     elapsed_time: float
 
 
-@app.post("/predict", response_model=InsertionResponse)
+@app.get("/predict", response_model=InsertionResponse)
 def predict(request: InsertionRequest, model: LfPeriodCommaModel = Depends(get_model)):
     start = time.time()
 

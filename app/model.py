@@ -1,4 +1,4 @@
-import numpy as np
+from functools import cache
 import pytorch_lightning as pl
 import torch
 from box import Box
@@ -19,9 +19,6 @@ config = dict(
 )
 config = Box(config)
 
-tokenizer = BertTokenizer.from_pretrained(config.pretrained_model_name)
-tokenizer.add_tokens(["[ANS]"])
-
 
 class LfPeriodCommaModel(pl.LightningModule):
     THRESHOLD = 0.5
@@ -37,6 +34,8 @@ class LfPeriodCommaModel(pl.LightningModule):
 
         self.bert = BertModel.from_pretrained(pretrained_model_name, return_dict=True)
         self.bert.resize_token_embeddings(len(tokenizer))
+
+        self.tokenizer = tokenizer
 
         # ラインフィードの判定 二値分類
         self.hidden_lf_layer = torch.nn.Linear(
@@ -67,7 +66,7 @@ class LfPeriodCommaModel(pl.LightningModule):
         return lf_predictions, comma_period_predictions
 
     def predict(self, text):
-        encoding = tokenizer.encode_plus(
+        encoding = self.tokenizer.encode_plus(
             text,
             add_special_tokens=True,
             max_length=config.data_module.max_length,
@@ -82,19 +81,21 @@ class LfPeriodCommaModel(pl.LightningModule):
         )
 
 
-model = LfPeriodCommaModel(
-    tokenizer,
-    pretrained_model_name=config.pretrained_model_name,
-    config=config,
-)
-model.load_state_dict(
-    torch.load(LF_PERIOD_COMMA_MODEL_PATH, map_location=torch.device("cpu"))[
-        "state_dict"
-    ]
-)
-model.eval()
-model.freeze()
-
-
+@cache
 def get_model():
+    tokenizer = BertTokenizer.from_pretrained(config.pretrained_model_name)
+    tokenizer.add_tokens(["[ANS]"])
+
+    model = LfPeriodCommaModel(
+        tokenizer,
+        pretrained_model_name=config.pretrained_model_name,
+        config=config,
+    )
+    model.load_state_dict(
+        torch.load(LF_PERIOD_COMMA_MODEL_PATH, map_location=torch.device("cpu"))[
+            "state_dict"
+        ]
+    )
+    model.eval()
+    model.freeze()
     return model
