@@ -54,4 +54,5 @@ jobs:
             --region $GCP_REGION \
             --platform=managed \
             --allow-unauthenticated \
+            --timeout=20m \
             --quiet
