@@ -3,7 +3,7 @@ resource "google_iam_workload_identity_pool" "github_actions" {
   provider = google-beta
 
   project                   = var.project_id
-  workload_identity_pool_id = "gh-oidc-pool"
+  workload_identity_pool_id = "gh-oidc-pool-3"
   display_name              = "gh-oidc-pool"
   description               = "Workload Identity Pool for GitHub Actions"
 }
