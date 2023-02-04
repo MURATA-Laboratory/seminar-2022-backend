@@ -9,12 +9,11 @@ LF_PERIOD_COMMA_MODEL_PATH = "./lf_comma_period_model.ckpt"
 config = dict(
     pretrained_model_name="cl-tohoku/bert-base-japanese-whole-word-masking",
     data_module=dict(
-        batch_size=16,
         max_length=32,
     ),
     model=dict(
-        hidden_lf_layer=256,
-        hidden_comma_period_layer=128,
+        hidden_lf_layer=128,
+        hidden_comma_period_layer=256,
     ),
 )
 config = Box(config)
