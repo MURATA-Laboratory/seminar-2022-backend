@@ -48,7 +48,7 @@ RUN cd /tmp \
   && ldconfig
 
 # Download lf-comma-period model weights (20230204_163303)
-RUN FILE_ID= "12UEvxnG7zBEipxWYL7n52XK2Q0WvLdpB" \
+RUN FILE_ID="12UEvxnG7zBEipxWYL7n52XK2Q0WvLdpB" \
   && curl -c /tmp/cookie -s "https://drive.google.com/uc?export=download&id=${FILE_ID}" > /dev/null \
   && CODE="$(awk '/_warning_/ {print $NF}' /tmp/cookie)"  \
   && curl -b /tmp/cookie -L "https://drive.google.com/uc?export=download&confirm=${CODE}&id=${FILE_ID}" -o lf_comma_period_model.ckpt \
