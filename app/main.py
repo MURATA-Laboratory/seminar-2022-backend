@@ -40,7 +40,7 @@ class InsertionResponse(BaseModel):
     elapsed_time: float
 
 
-@app.get("/predict", response_model=InsertionResponse)
+@app.post("/predict", response_model=InsertionResponse)
 def predict(request: InsertionRequest, model: LfPeriodCommaModel = Depends(get_model)):
     start = time.time()
 
