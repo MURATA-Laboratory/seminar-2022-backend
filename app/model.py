@@ -93,7 +93,8 @@ def get_model():
     model.load_state_dict(
         torch.load(LF_PERIOD_COMMA_MODEL_PATH, map_location=torch.device("cpu"))[
             "state_dict"
-        ]
+        ],
+        strict=False,
     )
     model.eval()
     model.freeze()
