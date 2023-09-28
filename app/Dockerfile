@@ -10,9 +10,21 @@ WORKDIR /app
 RUN pip install poetry \
     && poetry config virtualenvs.in-project true
 
+RUN pip install uvicorn
+RUN pip install numpy
+RUN pip install fastapi
+RUN pip install pydantic
+RUN pip install pytorch_lightning
+RUN pip install transformers
+
+
+
 # Mecab
 RUN apt update \
   && apt install -y --no-install-recommends mecab libmecab-dev mecab-ipadic-utf8
+
+RUN pip install --upgrade pip
+RUN pip install https://files.pythonhosted.org/packages/65/63/c2df733c7e9549c1acc6919a3157f8f2fe833fa013052b169e228e1aeb75/python_box-7.1.1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
 
 # # Install CRF++
 RUN wget -O /tmp/CRF++-0.58.tar.gz "https://drive.google.com/uc?export=download&id=0B4y35FiV1wh7QVR6VXJ5dWExSTQ" \
@@ -57,4 +69,4 @@ RUN FILE_ID="12UEvxnG7zBEipxWYL7n52XK2Q0WvLdpB" \
 COPY . .
 RUN poetry install --no-root
 
-CMD ["poetry", "run", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+CMD ["poetry", "run", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080", "--reload"]
